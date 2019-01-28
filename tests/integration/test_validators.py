@@ -210,6 +210,29 @@ class TestRequestValidator(object):
         }
 
 
+class TestRequestValidatorErrors(object):
+    @pytest.fixture
+    def spec_dict(self, factory):
+        return factory.spec_from_file("data/v3.0/multiple_mandatory_fields.yaml")
+
+    @pytest.fixture
+    def spec(self, spec_dict):
+        return create_spec(spec_dict)
+
+    @pytest.fixture
+    def validator(self, spec):
+        return RequestValidator(spec)
+
+    @pytest.mark.xfail(reason="multiple errors is not suported yet")
+    def test_two_missing_mandatory_parameters(self, validator):
+        request = MockRequest(
+            "http://cars.example.com/", "post", "/cars",
+            path_pattern="/cars", data='{"ps": 123}',
+        )
+        result = validator.validate(request)
+        assert len(result.errors) == 2
+
+
 class TestResponseValidator(object):
 
     host_url = 'http://petstore.swagger.io'
